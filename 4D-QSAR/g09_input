@@ -1,0 +1,54 @@
+#!/bin/bash
+num_ref=$(ls ref.txt 2> /dev/null | wc -l)
+if (( $num_ref == 0 ))
+   then
+   echo "There is no ref.txt file.Please type the command:
+touch ref.txt 
+and fill in g09 parameters.For example:
+6                            #It mean 6GB mem will be used.
+5                            #It mean 5 CPUs will be used.
+#p opt freq b3lyp/6-311g     #It is the method you want to use.
+Ma Wenzhi happy optimization #Job name"
+   exit 1
+   fi
+mkdir InputFiles
+dos2unix ref.txt
+c_out=$(ls *.gjf 2> /dev/null | wc -l)
+if [ "$c_out" != "0" ]
+   then
+for r in *gjf
+   do
+   sed -i 's#\/#\\\/#g' ref.txt #and some "/" in front of "\" for the next sed operation
+   name=${r%.gjf}
+   refmem=$(sed -n '1p' ref.txt)
+   refcpu=$(sed -n '2p' ref.txt)
+   refmethod=$(sed -n '3p' ref.txt)
+   refname=$(sed -n '4p' ref.txt)
+   mkdir $name
+   cp $r $name/.
+   cd $name
+   #sed -i 5d $name.gjf #delete the second line of method
+   sed -i '/^geom/d' $name.gjf #delete the second line of method 
+   sed -i "1s/.*/%chk=$name.chk/" ${name}.gjf #chk
+   sed -i "2s/.*/%mem=${refmem}GB/" ${name}.gjf #mem used
+   sed -i "3s/.*/%nprocshared=$refcpu/" ${name}.gjf #CPU used
+   sed -i "4s/.*/$refmethod\n/" ${name}.gjf #method
+   sed -i "6s/.*/$refname\n/" ${name}.gjf #job name
+   sed -i '/1 2/,$d' ${name}.gjf #delete bond parameter
+   sed -i '$a\name_ini.gesp' $name.gjf #*_ini.gesp it can off by "#"
+   sed -i '$a\\r' $name.gjf
+   sed -i '$a\name.gesp' $name.gjf  #*.gesp it can off by "#"
+   sed -i '$a\\r' $name.gjf #add some blank
+   sed -i '$a\\r' $name.gjf
+   sed -i '$a\\r' $name.gjf
+   sed -i '$a\\r' $name.gjf
+   sed -i s/name/$name/g $name.gjf #for *.gesp and *_ini.gesp
+   cp $name.gjf ../InputFiles
+   cd ..
+   sed -i 's#\\##g' ref.txt #No trace
+   rm -rf $name
+   done
+echo "All of your modified gaussian09 input files were put in InputFiles directory.Good luck.
+Job done(g09_input).
+YOU ARE THE LOYAL SERVANT OF THE KING."
+fi

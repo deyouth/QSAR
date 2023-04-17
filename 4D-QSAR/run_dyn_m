@@ -1,0 +1,83 @@
+#!/bin/bash
+cp -dr ~/QSAR_KING/files .
+dir=../files
+c_out=$(ls *.gro 2> /dev/null | wc -l)
+if [ "$c_out" != "0" ]
+   then
+for r in *gro
+   do
+   name=${r%_GMX.gro}
+   mkdir $name
+   cp $r $name/.
+   cd $name
+   mv $r lig.gro
+   cd ..
+   done
+for r in *log
+   do
+   name=${r%.log}
+   cp $r $name/.
+   cd $name
+   mv $r ${name}.g09
+   obabel -ig09 ${name}.g09 -omol2 > ${name}.mol2
+   sed -i s/UNL1/LIG1/ ${name}.mol2
+   sed -i 2s/.*/converted/ ${name}.mol2
+   sed -i 5s/.*/"AMBER ff14SB"/ ${name}.mol2
+   sed -i 6s/.*/""/ ${name}.mol2
+   sed -i 6G ${name}.mol2
+   echo "@<TRIPOS>SUBSTRUCTURE" >> ${name}.mol2
+   dos2unix ${name}.mol2
+   cd ..
+   done
+for r in *.itp
+   do
+   name=${r%.itp}
+   mv $r $name/posre.itp
+   done
+for r in *top
+   do
+   name=${r%_GMX.top}
+   cp $r $name/.
+   cd $name
+   touch posres_water.itp
+   touch ff${name}.itp
+   touch ff${name}nb.itp
+   mv $r lig.top
+   echo '[ position_restraints ]' >> posres_water.itp
+   echo ';  i funct       fcx        fcy        fcz' >> posres_water.itp
+   echo '   1    1       1000       1000       1000' >> posres_water.itp
+   echo '#define _FF_GAFF' >> ff${name}.itp 
+   echo '#define _FF_AMBER' >> ff${name}.itp
+   echo '#define _FF_USER' >> ff${name}.itp
+   cat lig.top | head -n 5 >> ff${name}.itp
+   sed -i '$a\\r' ff${name}.itp
+   sed -i '$a\#include "ffnb.itp"' ff${name}.itp
+   sed -i s/ffnb/ff${name}nb/g ff${name}.itp
+   l=$(sed -n -e '/moleculetype/=' lig.top)
+   line=$[l-1]
+   cat lig.top | head -n ${line} | tail -n +7 >> ff${name}nb.itp
+   sed -i '$d' ff${name}nb.itp
+   cat $dir/lines >> ff${name}nb.itp
+   sed -i '/^$/d' ff${name}nb.itp
+   sed -i "1,${line}"d lig.top
+   sed -i '1i#include "ff.itp"' lig.top
+   sed -i s/ff/ff${name}/g lig.top
+   sed -i '$a\\r' lig.top
+   sed -i /system/i'#ifdef POSRES' lig.top
+   sed -i /system/i'#include "posre.itp"' lig.top
+   sed -i /system/i'#endif' lig.top
+   sed -i '$a\\r' lig.top
+   sed -i /system/i'#include "gaff_tip3p.itp"' lig.top
+   sed -i /system/i'#ifdef POSRES_WATER' lig.top
+   sed -i /system/i'#include "posres_water.itp"' lig.top
+   sed -i /system/i'#endif' lig.top
+   sed -i '$a\\r' lig.top
+   sed -i /system/i'#include "ions_gaff.itp"' lig.top
+   sed -i '/system/i\\r' lig.top
+   bash $dir/din_script_m
+   cd ..
+   done
+rm -dr files
+echo "Job done(run_dyn_m).
+YOU ARE THE LOYAL SERVANT OF THE KING."
+fi

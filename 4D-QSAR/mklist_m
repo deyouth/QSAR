@@ -1,0 +1,8 @@
+#!/bin/bash
+[ -f list.txt ] && (rm list.txt)
+for mol in $(cat $1)
+   do
+   [ -f ${mol}.gro ] && (echo ${mol}.gro >> list.txt) || (echo "${mol}.gro is missing")
+   [ -f ${mol}.top ] && (echo ${mol}.top >> list.txt) || (echo "${mol}.top is missing")
+   [ -f ff${mol}nb.itp ] && (echo ff${mol}nb.itp >> list.txt) || (echo "ff${mol}nb.itp is missing")
+   done

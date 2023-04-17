@@ -1,0 +1,73 @@
+#!/bin/bash
+num_gesp=$(ls *.gesp 2> /dev/null | wc -l)
+if (( $num_gesp == 0 ))
+    then
+    echo "There is no *.gesp file."
+    touch notReady
+    exit 1
+    fi
+num_log=$(ls *.log 2> /dev/null | wc -l)
+if (( $num_log == 0 ))
+    then
+    echo "There is no *.log file."
+    touch notReady
+    exit 1
+    fi
+num_ref=$(ls ref.txt 2> /dev/null | wc -l)
+if (( $num_ref == 0 ))
+    then
+    echo "There is no ref.txt file."
+    touch notReady
+    exit 1
+    fi
+num_names=$(ls names.txt 2> /dev/null | wc -l)
+if (( $num_names == 0 ))
+    then
+    echo "There is no names.txt file."
+    touch notReady
+    exit 1
+    fi
+num_index=$(ls index.txt 2> /dev/null | wc -l)
+if (( $num_ref == 0 ))
+    then
+    echo "There is no index.txt file."
+    exit 1
+    fi
+num_act=$(ls act.txt 2> /dev/null | wc -l)
+if (( $num_act == 0 ))
+    then
+    echo "There is no act.txt file."
+    touch notReady
+    exit 1
+    fi
+
+dos2unix names.txt
+dos2unix index.txt
+dos2unix act.txt
+dos2unix ref.txt
+sed -i '/^\s*$/d' names.txt
+sed -i '/^\s*$/d' index.txt
+sed -i '/^\s*$/d' act.txt
+sed -i '/^\s*$/d' ref.txt
+echo '' >> names.txt
+echo '' >> index.txt
+echo '' >> act.txt
+echo '' >> ref.txt
+
+lines=$(cat names.txt | wc -l)
+l_ndx=$(cat index.txt | wc -l)
+l_act=$(cat act.txt | wc -l)
+
+if (( $lines!=$l_ndx ))
+   then
+   echo -e "Number of lines in names.txt and index.txt don't match"
+   touch notReady
+   exit 1
+   fi
+
+if (( $lines!=$l_act ))
+   then
+   echo -e "Number of lines in names.txt and act.txt don't match"
+   touch notReady
+   exit 1
+   fi

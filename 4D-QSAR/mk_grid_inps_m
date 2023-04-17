@@ -1,0 +1,77 @@
+#!/bin/bash
+# ref
+num_ref=$(ls *_ref.ndx 2> /dev/null | wc -l)
+if (( $num_ref == 0 ))
+   then
+   echo "There is no *_ref.ndx file."
+   exit 1
+   fi
+if (( $num_ref > 1 ))
+   then
+   echo "There are more than 1 *_ref.ndx files."
+   exit 1
+   fi
+mkdir grid_inps
+ref=$(ls *_ref.ndx)
+ref_nr=$(ls *_ref.ndx | cut -d . -f 1)
+ref_n=$(ls *_ref.ndx | cut -d _ -f 1)
+mkdir $ref_nr
+cp $ref $ref_nr
+ref_ad=$PWD
+ref_d="../$ref_n"
+echo 1 > l ; echo 1 >> l
+gmx trjconv -b 50 -f $ref_d/md300.trr -s $ref_d/md300.tpr -fit rot+trans -sep -o ${ref_nr}/.pdb < l
+cd $ref_nr
+max_frame=$(ls *pdb | sort -rn | sed -n '1p' | cut -d. -f1)
+cd ..
+for ((  i = 0 ;  i <= $max_frame ;  i++  ))
+   do
+   gmx confrms -f1 ${ref_nr}/0.pdb -n1 ${ref_nr}/$ref -f2 ${ref_nr}/${i}.pdb -n2 ${ref_nr}/$ref -o ${ref_nr}/${i}_alg.pdb -one
+   gmx editconf -f ${ref_nr}/${i}_alg.pdb -o ${ref_nr}/${i}_alg.gro
+   done
+cat ${ref_nr}/*alg.pdb > ${ref_nr}/${ref_n}.pdb
+cat ${ref_nr}/*alg.gro > ${ref_nr}/${ref_n}.gro
+cp $ref_d/lig.top grid_inps/${ref_n}.top
+cp $ref_d/ff${ref_n}nb.itp grid_inps/
+cp ${ref_nr}/${ref_n}.gro grid_inps/
+# others
+mv $ref tmp.bak
+for rndx in *.ndx
+   do
+   name=${rndx%.ndx}
+   mkdir $name
+   cp $rndx $name
+   r_d=$"../$name"
+   gmx trjconv -b 50 -f $r_d/md300.trr -s $r_d/md300.tpr -fit rot+trans -sep -o $name/.pdb < l
+   cd $name
+   max_frame=$(ls *pdb | sort -rn | sed -n '1p' | cut -d. -f1)
+   cd ..
+   for ((  i = 0 ;  i <= $max_frame ;  i++  ))
+      do
+      gmx confrms -f1 ${ref_nr}/0_alg.pdb -n1 ${ref_nr}/$ref -f2 ${name}/${i}.pdb -n2 ${name}/$rndx -o ${name}/${i}_alg.pdb -one
+      gmx editconf -f ${name}/${i}_alg.pdb -o ${name}/${i}_alg.gro
+      done
+   cat ${name}/*alg.pdb > ${name}/${name}.pdb
+   cat ${name}/*alg.gro > ${name}/${name}.gro
+   cp ${r_d}/lig.top grid_inps/${name}.top
+   cp ${r_d}/ff${name}nb.itp grid_inps/
+   cp ${name}/${name}.gro grid_inps/
+   done
+rm l
+mv tmp.bak $ref
+# make ffcargasnb.itp file
+cd grid_inps/
+mkff
+cd ..
+# make box
+cd grid_inps/
+mkbox_m
+cd ..
+# make list
+cp names.txt grid_inps/.
+cp act.txt grid_inps/.
+cd grid_inps/
+mklist_m names.txt
+cd ..
+echo "Job done(mk_grid_inps_m).
+YOU ARE THE LOYAL SERVANT OF THE KING."

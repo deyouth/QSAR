@@ -1,0 +1,23 @@
+#!/bin/bash
+mkdir ndx
+cp ../*.txt ndx/.
+cd ndx/
+
+lines=$(cat names.txt | wc -l)
+l_ndx=$(cat index.txt | wc -l)
+for (( r=1 ; r<=$lines ; r++ ))
+   do
+   name=$(awk NR==$r names.txt)
+   ndx=$(awk NR==$r index.txt)
+   echo "[ atoms ]" > ${name}.ndx
+   echo $ndx | tr " " "\t" >> ${name}.ndx
+   done
+
+rm .ndx
+refName=$(cat ref.txt)
+mv $refName.ndx ${refName}\_ref.ndx
+cd ..
+
+
+echo "Job done(mk_ndx_m).
+YOU ARE THE LOYAL SERVANT OF THE KING."

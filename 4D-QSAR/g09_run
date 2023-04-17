@@ -1,0 +1,29 @@
+#!/bin/bash
+c_out=$(ls *.gjf 2> /dev/null | wc -l)
+if [ "$c_out" != "0" ]
+   then
+mkdir g09_output
+for r in *gjf
+   do
+   cp $r g09_output/
+   cd g09_output
+   g09 $r
+   wait
+   cd ..
+   done
+fi
+c_out=$(ls *.com 2> /dev/null | wc -l)
+if [ "$c_out" != "0" ]
+   then
+for r in *com
+   do
+   cp $r g09_output/
+   cd g09_output
+   g09 $r
+   wait
+   cd ..
+   done
+fi
+echo "All of your gaussian09 output files were put in g09_output directory.Good luck.
+Job done(g09_run).
+YOU ARE THE LOYAL SERVANT OF THE KING."

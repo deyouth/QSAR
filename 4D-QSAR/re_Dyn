@@ -1,0 +1,27 @@
+#!/bin/bash
+mkdir reDyn
+cat reDyn.txt | while read line
+do
+cp $line reDyn/
+done
+
+cat fail_dir.txt | while read line
+do
+rm -rf $line
+done
+
+cd reDyn/
+
+cp ~/QSAR_KING/Citadel/b4_run_dyn.py .
+python b4_run_dyn.py
+rm b4_run_dyn.py
+
+run_dyn_m
+
+rm *.log *.gro *.top
+mv * ../
+cd ..
+rm -rf reDyn
+rm reDyn.txt
+rm fail_dir.txt
+

@@ -1,0 +1,20 @@
+#!/bin/bash
+mkdir tmp
+cp *nb.itp tmp/
+cd tmp/
+for r in *
+   do
+   cp $r ${r}.bak
+   line=$(grep -n atomtypes $r | cut -d: -f1)
+   lines=$(cat $r | wc -l)
+   awk NR==$line,NR==$lines ${r}.bak > $r
+   rm ${r}.bak
+   done
+FF_BASIC=$(ls -1 | head -1)
+cat $FF_BASIC > ../ffcargasnb.itp
+for r in *
+	do
+	grep -Fxvf ../ffcargasnb.itp $r  >> ../ffcargasnb.itp
+	done
+cd ../
+rm -dr tmp

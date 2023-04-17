@@ -1,0 +1,34 @@
+#!/bin/bash
+rm lig_box.gro pmd.gro
+inp_gro=lig.gro
+inp_top=lig.top
+export dir=../files
+cp ../files/gaff_tip3p.itp .
+cp ../files/ions_gaff.itp .
+gmx editconf -bt dodecahedron -f $inp_gro -o lig_box.gro -d 1.0 -c
+gmx solvate -cp lig_box.gro -cs $dir/tip3p.gro -o lig_h2o.gro -p $inp_top 
+gmx grompp -f $dir/st.mdp -c lig_h2o.gro -r lig_h2o.gro -p $inp_top -o st.tpr -maxwarn 4
+gmx mdrun -s st.tpr -o st.trr -c cg.gro -g st.log -e st.edr -nt 20
+gmx grompp -f $dir/cg.mdp -c cg.gro -r cg.gro -p $inp_top -o cg.tpr -maxwarn 4
+gmx mdrun -s cg.tpr -o cg.trr -c pr.gro -g cg.log -pin on
+# PR
+gmx grompp -f $dir/pr.mdp -c pr.gro -r pr.gro -p $inp_top -o pr.tpr -maxwarn 4
+gmx mdrun -s pr.tpr -o pr.trr -c md50.gro -g pr.log -nt 20
+# 50 K
+gmx grompp -f $dir/md50.mdp -c md50.gro -r md50.gro -p $inp_top -o md50.tpr -maxwarn 4
+gmx mdrun -s md50.tpr -o md50.trr -c md100.gro -g md50.log -nt 20
+# 100 K
+gmx grompp -f $dir/md100.mdp -c md100.gro -r md100.gro -p $inp_top -o md100.tpr -maxwarn 4
+gmx mdrun -s md100.tpr -o md100.trr -c md200.gro -g md100.log -nt 20
+# 200 K
+gmx grompp -f $dir/md200.mdp -c md200.gro -r md200.gro -p $inp_top -o md200.tpr -maxwarn 4
+gmx mdrun -s md200.tpr -o md200.trr -c md350.gro -g md200.log -nt 20
+# 350 K
+gmx grompp -f $dir/md350.mdp -c md350.gro -r md350.gro -p $inp_top -o md350.tpr -maxwarn 4
+gmx mdrun -s md350.tpr -o md350.trr -c md300.gro -g md350.log -nt 20
+# 300 K
+gmx grompp -f $dir/md300.mdp -c md300.gro -r md300.gro -p $inp_top -o md300.tpr -maxwarn 4
+gmx mdrun -s md300.tpr -o md300.trr -c pmd.gro -g md300.log -e md300.edr -nt 20
+rm \#*
+rm gaff_tip3p.itp
+rm ions_gaff.itp

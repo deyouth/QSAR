@@ -1,0 +1,21 @@
+#!/bin/bash
+mkdir tmp
+for r in *.gro
+   do
+   grep 1MOL $r | tr -s " " | cut -d " " -f 5 >> tmp/x.tmp
+   grep 1MOL $r | tr -s " " | cut -d " " -f 6 >> tmp/y.tmp
+   grep 1MOL $r | tr -s " " | cut -d " " -f 7 >> tmp/z.tmp
+   done
+echo -e "Coord\nMin\nMax" > tmp/t.tmp
+echo X > tmp/xf.tmp
+cat tmp/x.tmp | sort -n | head -1 >> tmp/xf.tmp
+cat tmp/x.tmp | sort -n | tail -1 >> tmp/xf.tmp
+echo Y > tmp/yf.tmp
+cat tmp/y.tmp | sort -n | head -1 >> tmp/yf.tmp
+cat tmp/y.tmp | sort -n | tail -1 >> tmp/yf.tmp
+echo Z > tmp/zf.tmp
+cat tmp/z.tmp | sort -n | head -1 >> tmp/zf.tmp
+cat tmp/z.tmp | sort -n | tail -1 >> tmp/zf.tmp
+paste tmp/t.tmp tmp/xf.tmp tmp/yf.tmp tmp/zf.tmp > box.txt
+rm -rd tmp
+
