@@ -16,32 +16,25 @@ It contains all names of compounds,The text file will be:
 Each line of this file must contain the atom indexes from Gaussian that will be aligned, separeted by "tab". For example, the Gaussian atoms indexes of m01 and m02 that will be aligned are 1,3,5,7. For m03 these atoms have different Gaussian indexes, that are 2,4,5,9. The "index.txt" file will be:
 
 >1 3  5	7
-   
->1	3	5	7
-   
->2	4	5	9
 
 #### act.txt
 It contains the bioactive value (pIC<sub>50</sub> value) of all compounds, corresponding to the name.txt. The text file will be:
 
 #### ref.txt
 It contains the name of the reference compound used in the alignment step. For example, m02 was chosen as the alignment reference. The text file will be:
-
 #### test.txt (Optional)
 Manually specify which compounds are used as test sets. If there is no such file, the program will randomly pick one-fifth of the compounds as a test set. For example, m02 is in the test set and m01,m03 are in the training set, the text file will be:
-1.
-Firstly, use Gaussian for structural optimization, which is not limited to the base set and requires the addition of charge analysis and iop advanced instructions to output charge files, such as:
+1.Firstly, use Gaussian for structural optimization, which is not limited to the base set and requires the addition of charge analysis and iop advanced instructions to output charge files, such as:
 #opt freq b3lyp/cc-pvdz empiricaldispersion=gd3bj pop=mk iop(6/33=2,6/42=6,6/50=1)
-2.
-“g09_input” is used to batch modify Gaussian input files. How to use: Put all the *.gjf files saved by GaussView in the same folder, create a new ref.txt file, and write the used memory, thread number, method, and task name line by line in it, for example:
-6                      # use 6GB memory
-5                      #Use 5 threads to calculate
-opt freq b3lyp/6-311g  #method
-top                    # task name
-3.
-$g09_input
-This script will automatically help the user with the preparation of all Gaussian input files. If there is no ref.txt file in the folder, a corresponding prompt will be printed out. g09_run is used to submit Gaussian computing tasks sequentially in batches, put all *.gjf input files ready to run into the same folder, open the console in this folder, and enter:
-$g09_run
+
+2.“g09_input” is used to batch modify Gaussian input files. How to use: Put all the *.gjf files saved by GaussView in the same folder, create a new ref.txt file, and write the used memory, thread number, method, and task name line by line in it, for example:
+>6                      # use 6GB memory
+>5                      #Use 5 threads to calculate
+>opt freq b3lyp/6-311g  #method
+>top                    # task name
+
+3.$g09_input This script will automatically help the user with the preparation of all Gaussian input files. If there is no ref.txt file in the folder, a corresponding prompt will be printed out. g09_run is used to submit Gaussian computing tasks sequentially in batches, put all *.gjf input files ready to run into the same folder, open the console in this folder, and enter:
+>$g09_run
 4.
 RESP2_ Noopt.sh and Multiwfn_ 3.8 was used to fit RESP charges, and sobtob was used to generate small molecule topology files.Please refer to the following website for details：http://sobereva.com/476
 5.
